@@ -295,7 +295,7 @@ class Renderer:
         # transfer clip_start & clip_end parameter to new camera
         self.camera.data.clip_start = self.camera_origin.data.clip_start
         self.camera.data.clip_end = self.camera_origin.data.clip_end
-        self.path = bpy.path.abspath(context.preferences.filepaths.render_output_directory)
+        self.path = "C:/Users/Administrator/Desktop/ArtStuff/Projects/Virosphere/"
         self.tmpdir = bpy.path.abspath(context.preferences.filepaths.temporary_directory)
         self.tmpfile_format = self.preferences.temporal_file_format
         self.tmpfext = '.tga' if self.tmpfile_format == 'TARGA_RAW' else '.png'
