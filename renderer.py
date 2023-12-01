@@ -753,49 +753,48 @@ class Renderer:
 
         start_time = time.time()
 # Convert the rendered images to equirectangular projection image and save it to the disk
-if self.is_stereo:
-    leftImage = self.cubemap_to_panorama(imageList, "Render Left")
-    rightImage = self.cubemap_to_panorama(imageList2, "Render Right")
+        if self.is_stereo:
+            leftImage = self.cubemap_to_panorama(imageList, "Render Left")
+            rightImage = self.cubemap_to_panorama(imageList2, "Render Right")
 
-    # If it doesn't already exist, create an image object to store the resulting render
-    if not image_name in bpy.data.images.keys():
-        imageResult = bpy.data.images.new(image_name, leftImage.size[0], 2 * leftImage.size[1])
-    
-    imageResult = bpy.data.images[image_name]
-    img1arr = np.empty((leftImage.size[1], 4 * leftImage.size[0]), dtype=np.float32)
-    leftImage.pixels.foreach_get(img1arr.ravel())
-    img2arr = np.empty((rightImage.size[1], 4 * rightImage.size[0]), dtype=np.float32)
-    rightImage.pixels.foreach_get(img2arr.ravel())
-    if self.sidebyside:
-        imageResult.scale(2*leftImage.size[0], leftImage.size[1])
-        if self.use_sidebyside_crosseyed:
-            imageResult.pixels.foreach_set(np.concatenate((img1arr, img2arr), axis=1).ravel())
+            # If it doesn't already exist, create an image object to store the resulting render
+            if not image_name in bpy.data.images.keys():
+                imageResult = bpy.data.images.new(image_name, leftImage.size[0], 2 * leftImage.size[1])
+            
+            imageResult = bpy.data.images[image_name]
+            img1arr = np.empty((leftImage.size[1], 4 * leftImage.size[0]), dtype=np.float32)
+            leftImage.pixels.foreach_get(img1arr.ravel())
+            img2arr = np.empty((rightImage.size[1], 4 * rightImage.size[0]), dtype=np.float32)
+            rightImage.pixels.foreach_get(img2arr.ravel())
+            if self.sidebyside:
+                imageResult.scale(2*leftImage.size[0], leftImage.size[1])
+                if self.use_sidebyside_crosseyed:
+                    imageResult.pixels.foreach_set(np.concatenate((img1arr, img2arr), axis=1).ravel())
+                else:
+                    imageResult.pixels.foreach_set(np.concatenate((img2arr, img1arr), axis=1).ravel())
+            else:
+                imageResult.scale(leftImage.size[0], 2*leftImage.size[1])
+                if self.scene.eeVR.isTopRightEye:
+                    imageResult.pixels.foreach_set(np.concatenate((img2arr, img1arr)).ravel())
+                else:
+                    imageResult.pixels.foreach_set(np.concatenate((img1arr, img2arr)).ravel())
+            bpy.data.images.remove(leftImage)
+            bpy.data.images.remove(rightImage)
+
         else:
-            imageResult.pixels.foreach_set(np.concatenate((img2arr, img1arr), axis=1).ravel())
-    else:
-        imageResult.scale(leftImage.size[0], 2*leftImage.size[1])
-        if self.scene.eeVR.isTopRightEye:
-            imageResult.pixels.foreach_set(np.concatenate((img2arr, img1arr)).ravel())
-        else:
-            imageResult.pixels.foreach_set(np.concatenate((img1arr, img2arr)).ravel())
-    bpy.data.images.remove(leftImage)
-    bpy.data.images.remove(rightImage)
-
+            imageResult = self.cubemap_to_panorama(imageList, "RenderResult")
+        
+        save_start_time = time.time()
+        if self.is_animation:
+            imageResult.filepath_raw = self.path+self.folder_name+image_name
+            imageResult.save()
+            self.scene.frame_set(self.scene.frame_current+frame_step)
 else:
-    imageResult = self.cubemap_to_panorama(imageList, "RenderResult")
-
-save_start_time = time.time()
-if self.is_animation:
-    imageResult.filepath_raw = "C:/Users/Administrator/Desktop/ArtStuff/" + self.folder_name + image_name
-    imageResult.save()
-    self.scene.frame_set(self.scene.frame_current+frame_step)
-else:
-    imageResult.filepath_raw = "C:/Users/Administrator/Desktop/ArtStuff/" + image_name
+    imageResult.filepath_raw = "C:/Users/Administrator/Desktop/ArtStuff/Projects/Virosphere/" + image_name
     imageResult.save()
 
-print(f'''Saved '{imageResult.filepath_raw}'
-Time : {round(time.time() - start_time, 2)} seconds (Saving : {round(time.time() - save_start_time, 2)} seconds)
-''')
+        print(f'''Saved '{imageResult.filepath_raw}'
+ Time : {round(time.time() - start_time, 2)} seconds (Saving : {round(time.time() - save_start_time, 2)} seconds)
+ ''')
 
-bpy.data.images.remove(imageResult)
-
+        bpy.data.images.remove(imageResult)
