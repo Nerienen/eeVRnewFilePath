@@ -789,9 +789,9 @@ class Renderer:
             imageResult.filepath_raw = self.path+self.folder_name+image_name
             imageResult.save()
             self.scene.frame_set(self.scene.frame_current+frame_step)
-else:
-    imageResult.filepath_raw = "C:/Users/Administrator/Desktop/ArtStuff/Projects/Virosphere/" + image_name
-    imageResult.save()
+        else:
+            imageResult.filepath_raw = "C:/Users/Administrator/Desktop/ArtStuff/Projects/Virosphere/" + image_name
+        imageResult.save()
 
         print(f'''Saved '{imageResult.filepath_raw}'
  Time : {round(time.time() - start_time, 2)} seconds (Saving : {round(time.time() - save_start_time, 2)} seconds)
